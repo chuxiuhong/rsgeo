@@ -8,7 +8,7 @@ Add it to your Cargo.toml
 
 ```
 [dependencies]
-rsgeo = "0.1.0"
+rsgeo = "0.1.3"
 ```
 
 ## Usage
