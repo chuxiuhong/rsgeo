@@ -529,6 +529,15 @@ pub struct RecArea {
     pub(crate) max_long: f32,
 }
 
+/// CircleArea is a circle area which has a center point of circle and a radius
+///
+/// # Example
+///
+/// ```
+/// use rsgeo::prelude::*;
+/// let ca = CircleArea::new(Point::new(25.2,120.5).unwrap(),30_000.0);
+/// // create a circle which coc is (25.2,120.5) and radius is 30km
+/// ```
 #[derive(Debug)]
 pub struct CircleArea {
     /// coc is the center of a circle
