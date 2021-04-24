@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["chuxiuhong <chuxiuhong@chuxiuhong.com>"]
 edition = "2018"
 description = "rsgeo is a geography tool which is written with Rust. "
-license = "BSD"
+license = "MIT"
 homepage = "https://github.com/chuxiuhong/rsgeo"
 repository = "https://github.com/chuxiuhong/rsgeo"
 
