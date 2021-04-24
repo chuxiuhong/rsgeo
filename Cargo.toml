@@ -7,6 +7,6 @@ description = "rsgeo is a geography tool which is written with Rust. "
 license = "MIT"
 homepage = "https://github.com/chuxiuhong/rsgeo"
 repository = "https://github.com/chuxiuhong/rsgeo"
-
+documentation = "https://docs.rs/crate/rsgeo"
 
 [dependencies]
