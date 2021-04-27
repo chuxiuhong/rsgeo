@@ -1,10 +1,12 @@
 # rsgeo
 
 [![Build Status](https://travis-ci.com/chuxiuhong/rsgeo.svg?branch=main)](https://travis-ci.com/chuxiuhong/rsgeo)
+[![crates.io](https://img.shields.io/crates/v/rsgeo)](https://crates.io/crates/rsgeo)
 
 rsgeo is a geography tool which is written with Rust. 
 
 [简体中文](README-zh.md)
+
 ## Installation
 
 Add it to your Cargo.toml
