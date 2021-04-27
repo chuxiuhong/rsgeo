@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/chuxiuhong/rsgeo.svg?branch=main)](https://travis-ci.com/chuxiuhong/rsgeo)
+
 rsgeo 是一个用Rust开发的地理计算库
 
 ## 安装

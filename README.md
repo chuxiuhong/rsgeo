@@ -1,5 +1,7 @@
 # rsgeo
 
+[![Build Status](https://travis-ci.com/chuxiuhong/rsgeo.svg?branch=main)](https://travis-ci.com/chuxiuhong/rsgeo)
+
 rsgeo is a geography tool which is written with Rust. 
 
 [简体中文](README-zh.md)
