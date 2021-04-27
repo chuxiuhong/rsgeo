@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/chuxiuhong/rsgeo.svg?branch=main)](https://travis-ci.com/chuxiuhong/rsgeo)
+[![crates.io](https://img.shields.io/crates/v/rsgeo)](https://crates.io/crates/rsgeo)
 
 rsgeo 是一个用Rust开发的地理计算库
 
