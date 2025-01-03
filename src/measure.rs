@@ -2,21 +2,15 @@ use super::prelude::*;
 
 
 fn stlc_spa(t1: &Trajectory, t2: &Trajectory) -> f32 {
-    let mut spa = 0f32;
-    for location in &t1.locations {
-        spa += (0.0 - location.pos.shortest_distance_from_trajectory(t2).unwrap()).exp();
-    }
-    spa /= t1.len() as f32;
-    spa
+    t1.locations.iter()
+        .map(|location| (0.0 - location.pos.shortest_distance_from_trajectory(t2).unwrap()).exp())
+        .sum::<f32>() / t1.len() as f32
 }
 
 fn stlc_tem(t1: &Trajectory, t2: &Trajectory) -> f32 {
-    let mut tem = 0f32;
-    for location in &t1.locations {
-        tem += (0.0 - location.time_shortest_distance_from_trajectory(t2).unwrap() as f32).exp();
-    }
-    tem /= t1.len() as f32;
-    tem
+    t1.locations.iter()
+        .map(|location| (0.0 - location.time_shortest_distance_from_trajectory(t2).unwrap() as f32).exp())
+        .sum::<f32>() / t1.len() as f32
 }
 
 /// STLC(Spatiotemporal linear combin distance) algorithm

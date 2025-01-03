@@ -22,7 +22,10 @@ impl PartialEq for Point {
 
 impl Hash for Point {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        format!("{:8}-{:8}", self.lat, self.long).hash(state);
+        let lat_bits = self.lat.to_bits();
+        let long_bits = self.long.to_bits();
+        lat_bits.hash(state);
+        long_bits.hash(state);
     }
 }
 
@@ -165,8 +168,9 @@ impl Point {
         if other.is_empty() { return None; }
         let mut min_distance = 1e10;
         for location in &other.locations {
-            if self.distance(&location.pos) < min_distance {
-                min_distance = self.distance(&location.pos);
+            let dist = self.distance(&location.pos);
+            if dist < min_distance {
+                min_distance = dist;
             }
         }
         Some(min_distance)
@@ -319,13 +323,11 @@ impl Trajectory {
     }
 
     pub fn from(locs: &[Location]) -> Result<Self, &'static str> {
-        let mut v: Vec<Location> = Vec::with_capacity(locs.len());
-        if !locs.is_sorted_by_key(|x| x.timestamp) { return Err("Wrong time order of points!"); }
-        for loc in locs {
-            v.push(*loc);
+        if !locs.is_sorted_by_key(|x| x.timestamp) { 
+            return Err("Wrong time order of points!"); 
         }
         Ok(Self {
-            locations: v
+            locations: locs.to_vec()
         })
     }
 
@@ -499,15 +501,116 @@ impl Trajectory {
     }
 
     pub fn sum_distance(&self) -> f32 {
-        let mut dis = 0f32;
-        for i in 0..self.len() - 1 {
-            dis += self.locations[i].distance(&self.locations[i + 1]);
-        }
-        dis
+        self.locations.windows(2)
+            .map(|pair| pair[0].distance(&pair[1]))
+            .sum()
     }
     #[inline]
     pub fn sum_time(&self) -> u64 {
         if self.locations.len() < 2 { 0 } else { self.locations.last().unwrap().timestamp - self.locations.first().unwrap().timestamp }
+    }
+
+
+    pub fn turn_angles(&self) -> Option<Vec<f32>> {
+        if self.len() < 3 {
+            return None;
+        }
+        
+        let mut angles = Vec::with_capacity(self.len() - 2);
+        
+        for window in self.locations.windows(3) {
+            let p1 = &window[0].pos;
+            let p2 = &window[1].pos;
+            let p3 = &window[2].pos;
+            
+            // 计算向量p1->p2和p2->p3
+            let v1_lat = p2.lat - p1.lat;
+            let v1_long = p2.long - p1.long;
+            let v2_lat = p3.lat - p2.lat;
+            let v2_long = p3.long - p2.long;
+            
+            // 计算两个向量的点积
+            let dot_product = v1_lat * v2_lat + v1_long * v2_long;
+            
+            // 计算两个向量的叉积的z分量
+            let cross_product = v1_lat * v2_long - v1_long * v2_lat;
+            
+            // 计算向量的模
+            let v1_length = (v1_lat * v1_lat + v1_long * v1_long).sqrt();
+            let v2_length = (v2_lat * v2_lat + v2_long * v2_long).sqrt();
+            
+            // 计算夹角（弧度）
+            let angle = (dot_product / (v1_length * v2_length)).acos();
+            
+            // 根据叉积的符号确定转向方向
+            let signed_angle = if cross_product >= 0.0 {
+                angle
+            } else {
+                -angle
+            };
+            
+            // 转换为角度并添加到结果中
+            angles.push(degree(signed_angle));
+        }
+        
+        Some(angles)
+    }
+
+    /// 计算轨迹的总转向角（单位：度）
+    /// 
+    /// 总转向角是指轨迹中所有转向角的绝对值之和。
+    /// 这个值可以用来衡量轨迹的总体曲折程度。
+    /// 
+    /// 如果轨迹点数少于3个，返回None。
+    /// 
+    /// # Example
+    /// ```
+    /// use rsgeo::prelude::*;
+    /// let loc1 = Location::new(Point::new(0.0, 0.0).unwrap(), 0);
+    /// let loc2 = Location::new(Point::new(0.0, 1.0).unwrap(), 1);
+    /// let loc3 = Location::new(Point::new(1.0, 1.0).unwrap(), 2);
+    /// let loc4 = Location::new(Point::new(1.0, 0.0).unwrap(), 3);
+    /// let mut t = Trajectory::with_capacity(4);
+    /// t.push_location(&loc1).unwrap();
+    /// t.push_location(&loc2).unwrap();
+    /// t.push_location(&loc3).unwrap();
+    /// t.push_location(&loc4).unwrap();
+    /// let total = t.total_turn_angle().unwrap();
+    /// assert!((total - 180.0).abs() < 1e-6); // 总共转了180度(90度 + 90度)
+    /// ```
+    pub fn total_turn_angle(&self) -> Option<f32> {
+        self.turn_angles().map(|angles| {
+            angles.iter().map(|angle| angle.abs()).sum()
+        })
+    }
+
+    /// 计算轨迹的平均转向角（单位：度）
+    /// 
+    /// 平均转向角是总转向角除以转向次数。
+    /// 这个值可以用来衡量轨迹的平均曲折程度。
+    /// 
+    /// 如果轨迹点数少于3个，返回None。
+    /// 
+    /// # Example
+    /// ```
+    /// use rsgeo::prelude::*;
+    /// let loc1 = Location::new(Point::new(0.0, 0.0).unwrap(), 0);
+    /// let loc2 = Location::new(Point::new(0.0, 1.0).unwrap(), 1);
+    /// let loc3 = Location::new(Point::new(1.0, 1.0).unwrap(), 2);
+    /// let loc4 = Location::new(Point::new(1.0, 0.0).unwrap(), 3);
+    /// let mut t = Trajectory::with_capacity(4);
+    /// t.push_location(&loc1).unwrap();
+    /// t.push_location(&loc2).unwrap();
+    /// t.push_location(&loc3).unwrap();
+    /// t.push_location(&loc4).unwrap();
+    /// let avg = t.average_turn_angle().unwrap();
+    /// assert!((avg - 90.0).abs() < 1e-6); // 平均每次转90度
+    /// ```
+    pub fn average_turn_angle(&self) -> Option<f32> {
+        if self.len() < 3 {
+            return None;
+        }
+        self.total_turn_angle().map(|total| total / (self.len() - 2) as f32)
     }
 }
 
@@ -689,6 +792,39 @@ impl Polygon {
     /// Returns true if the Polygon contains no elements.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    pub fn area(&self) -> f32 {
+        if self.len() < 4 {
+            return 0.0;
+        }
+
+        const EARTH_RADIUS: f32 = 6378135.0; // 地球半径（米）
+        let mut area = 0.0;
+        
+        // 遍历多边形的所有边（除了最后一条闭合边）
+        for i in 0..self.points.len() - 1 {
+            let p1 = &self.points[i];
+            let p2 = &self.points[i + 1];
+            
+            // 转换为弧度
+            let lat1 = radians(p1.lat);
+            let lon1 = radians(p1.long);
+            let lat2 = radians(p2.lat);
+            let lon2 = radians(p2.long);
+            
+            // 使用Girard's theorem计算球面多边形的面积
+            // 计算经度差
+            let dlon = lon2 - lon1;
+            
+            // 计算该边对总面积的贡献
+            area += (lat2.sin() - lat1.sin()) * dlon;
+        }
+        
+        // 计算最终面积（平方米）
+        area = area.abs() * EARTH_RADIUS * EARTH_RADIUS / 2.0;
+        
+        area
     }
 }
 

@@ -13,7 +13,7 @@ Add it to your Cargo.toml
 
 ```
 [dependencies]
-rsgeo = "0.1.3"
+rsgeo = "0.1.4"
 ```
 
 ## Usage
@@ -144,5 +144,37 @@ use rsgeo::measure::stlc_trajectory_similarity;
 assert!((stlc_trajectory_similarity(&t, &t, 0.5).unwrap()-1.0).abs() < 1e-6);
 // stlc is spatiotemporal linear combin distance
 // the function returns similarity which is in (0,1]
+```
+
+Get the turn angles sequence of a trajectory
+
+```rust
+let loc1 = Location::new(Point::new(0.0, 0.0).unwrap(), 0);
+let loc2 = Location::new(Point::new(0.0, 1.0).unwrap(), 1);
+let loc3 = Location::new(Point::new(1.0, 1.0).unwrap(), 2);
+let loc4 = Location::new(Point::new(1.0, 0.0).unwrap(), 3);
+let mut t = Trajectory::with_capacity(4);
+t.push_location(&loc1).unwrap();
+t.push_location(&loc2).unwrap();
+t.push_location(&loc3).unwrap();
+t.push_location(&loc4).unwrap();
+println!("{:?}", t.turn_angles().unwrap()); // [90.0, -90.0]
+```
+
+Get the total and average turn angle of a trajectory
+
+```rust
+println!("{}", t.total_turn_angle().unwrap()); // 180.0
+println!("{}", t.average_turn_angle().unwrap()); // 90.0
+```
+
+Calculate the area of a polygon (in square meters)
+
+```rust
+let pa = Point::new(32.0,112.0).unwrap();
+let pb = Point::new(35.1,112.0).unwrap();
+let pc = Point::new(35.3,112.5).unwrap();
+let pg = Polygon::new(vec![pa,pb,pc,pa]).unwrap();
+println!("{}", pg.area()); // returns the area of polygon in square meters
 ```
 

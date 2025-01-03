@@ -1,8 +1,8 @@
 [package]
 name = "rsgeo"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["chuxiuhong <chuxiuhong@chuxiuhong.com>"]
-edition = "2018"
+edition = "2021"
 description = "rsgeo is a geography tool which is written with Rust. "
 license = "MIT"
 homepage = "https://github.com/chuxiuhong/rsgeo"
